@@ -3,10 +3,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import models, schemas, database
 from database import get_db
-from binance.client import Client
+from binance.async_client import AsyncClient
 from binance.exceptions import BinanceAPIException
 
-client = Client() ## Binance client 
+## client = Client() ## Async needs this inside the functions its being used it
 
 ## AUTH tools
 from passlib.context import CryptContext
@@ -103,19 +103,27 @@ def view_portfolio(current_user: str = Depends(get_current_user)):
 
 ## Using Binance Lib to get data
 @app.get("/symbol/{crypto}")
-def crypto_symbol(crypto: str, current_user: str = Depends(get_current_user)):
+async def crypto_symbol(crypto: str, current_user: str = Depends(get_current_user)):
+
+    client = await AsyncClient.create() ## Async Connection in each endpoint
+   
     try: 
-        ticker = client.get_symbol_ticker(symbol = crypto)
+        ticker = await client.get_symbol_ticker(symbol = crypto)
         
         price = ticker['price']
-        
+
+       
+
         return {
             "Symbol": crypto,
             "Price": price
         }
+    
     except BinanceAPIException:
+        
         raise HTTPException(status_code=404, detail=f"{crypto} doesnt not exist on Binance")
     
+    finally: await client.close_connection()  ## await Async connection close
 
 
 ## ----------------------------------------------##
@@ -123,13 +131,14 @@ def crypto_symbol(crypto: str, current_user: str = Depends(get_current_user)):
 
 ## Getting historical data out of binance
 @app.get("/history/{crypto}")
-def get_history(crypto:str, current_user:str = Depends(get_current_user)):
+async def get_history(crypto:str, current_user:str = Depends(get_current_user)):
     
+    client = await AsyncClient.create()
     try: 
 
         lookback = 10
         ## klines is where we get our binance past data from
-        past_data_1D = client.get_klines(symbol=crypto, interval=Client.KLINE_INTERVAL_1DAY, limit=lookback)
+        past_data_1D = await client.get_klines(symbol=crypto, interval=AsyncClient.KLINE_INTERVAL_1DAY, limit=lookback)
         
         closing_prince_history = [] 
 
@@ -150,8 +159,6 @@ def get_history(crypto:str, current_user:str = Depends(get_current_user)):
         else: 
             Signal = None
 
-
-
         return{
             "Symbol": crypto,
             "Closed Daily": closing_prince_history,
@@ -160,9 +167,13 @@ def get_history(crypto:str, current_user:str = Depends(get_current_user)):
             "Signal": Signal
         }
 
-    except BinanceAPIException:
-        raise HTTPException(status_code=404, detail = f"{crypto} is the wrong symbol, or the history isnt available")
 
+    except BinanceAPIException:
+
+    
+        raise HTTPException(status_code=404, detail = f"{crypto} is the wrong symbol, or the history isnt available")
+    
+    finally: await client.close_connection()  ## await Async connection close
 
 
 
