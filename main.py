@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 import models, schemas, database
 from database import get_db
 from binance.async_client import AsyncClient
 from binance.exceptions import BinanceAPIException
+from sqlalchemy.future import select
 
 ## client = Client() ## Async needs this inside the functions its being used it
 
@@ -18,40 +20,41 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "Super_super_secret_key"
 ALGORITHM = "HS256" 
 
-## Command sqlalchemy to build all the tables in the database rn
-models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
 @app.post("/signup")
-def create_user(request:schemas.UserCreate, db: Session = Depends(get_db)):
+async def create_user(request:schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     
     scramble_password = pwd_context.hash(request.password)
     
     new_user = models.User(username=request.username, hashed_password = scramble_password)
     
     db.add(new_user)
-    db.commit()
+    await db.commit()
     return{"message":f"{request.username} account created successfuly!"}
 
 
 @app.post("/login")
-def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     
-    db_user = db.query(models.User).filter(models.User.username == request.username).first()
+    #db_user = await db.query(models.User).filter(models.User.username == request.username).first
+
+    stmt = select(models.User).filter(models.User.username == request.username)
+    result = await db.execute(stmt)
+    db_user = result.scalars().first()
+
     if db_user == None:
         raise HTTPException(status_code=404, detail= f"{request.username} not found") 
     is_correct = pwd_context.verify(request.password, db_user.hashed_password)
 
     if is_correct == False:
-        raise HTTPException(status_code=401, detail = "Incorrect Passowrd!")
+       raise HTTPException(status_code=401, detail = "Incorrect Passowrd!")
     
     if is_correct == True: 
         expire_time = datetime.now(timezone.utc) + timedelta(minutes=30)
         payload = {"sub": request.username, "exp":expire_time }
         wristband = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-
 
         return{"access_token": wristband, "token_type": "bearer"}
     
@@ -112,15 +115,12 @@ async def crypto_symbol(crypto: str, current_user: str = Depends(get_current_use
         
         price = ticker['price']
 
-       
-
         return {
             "Symbol": crypto,
             "Price": price
         }
     
     except BinanceAPIException:
-        
         raise HTTPException(status_code=404, detail=f"{crypto} doesnt not exist on Binance")
     
     finally: await client.close_connection()  ## await Async connection close
@@ -169,8 +169,6 @@ async def get_history(crypto:str, current_user:str = Depends(get_current_user)):
 
 
     except BinanceAPIException:
-
-    
         raise HTTPException(status_code=404, detail = f"{crypto} is the wrong symbol, or the history isnt available")
     
     finally: await client.close_connection()  ## await Async connection close
