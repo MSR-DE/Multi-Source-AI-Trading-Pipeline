@@ -19,7 +19,3 @@ app = FastAPI()
 def signal(crypto:str):
     return(client.get_account())
 
-
-
-    
-
