@@ -20,18 +20,17 @@ from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
 
-
-## initializing Rate-limiter
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter ## attach it to the app 
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256" 
 
 
 app = FastAPI()
+## initializing Rate-limiter 
+## STRICTLY BELOW APP
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter ## attach it to the app 
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.post("/signup")
 async def create_user(request:schemas.UserCreate, db: AsyncSession = Depends(get_db)):
@@ -207,7 +206,7 @@ async def live(websocket: WebSocket, crypto:str ):
 
 @app.post("/trade/{crypto}")
 @limiter.limit("5/minute") ## Rate limiting decorator
-async def trigger_trade(request: Requests, crypto: str, current_user: str = Depends(get_current_user)): 
+async def trigger_trade(request: Request, crypto: str, current_user: str = Depends(get_current_user)): 
 ## request: Requests because slowapi needs needs the object to look at IP add fo the usr calling the api
 
     # 1) send ticket to redis mailbox using .delay
