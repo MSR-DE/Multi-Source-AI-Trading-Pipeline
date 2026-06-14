@@ -106,3 +106,7 @@ loguru
 pytest
 pytest-asyncio
 httpx
+pgvector
+tiktoken
+openai
+google-genai

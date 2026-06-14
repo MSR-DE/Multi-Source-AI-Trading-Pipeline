@@ -1,5 +1,10 @@
 from sqlalchemy import Column, Integer, String, Float
 from database import Base
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import DateTime, ForeignKey
+import datetime
+
+
 
 class User(Base):
     __tablename__ = "users"
@@ -7,3 +12,18 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     email = Column(String, nullable=True)
+
+
+
+
+class TradeAnalysis(Base):
+    __tablename__ = "trade_analyses"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True) 
+    symbol = Column(String, index=True)
+    sentiment = Column(String)
+    reasoning = Column(String)
+    embedding = Column(Vector(768))
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+
+    

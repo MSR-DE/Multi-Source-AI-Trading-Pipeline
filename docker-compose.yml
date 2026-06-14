@@ -3,7 +3,7 @@ version: '3.8'
 services:
 # container 1: the official POSTGRESQL databse
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     env_file:
       - .env 
     ports:
