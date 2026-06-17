@@ -15,7 +15,8 @@ requests
 python-dotenv
 slowapi
 loguru
-passlib[bcrypt]
+passlib
+bcrypt==3.2.0
 PyJWT
 pytest
 pytest-asyncio
