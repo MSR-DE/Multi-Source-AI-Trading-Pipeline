@@ -1,12 +1,17 @@
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-async-green)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-brightgreen)
+
 # Multi-Source AI Trading & Financial Analysis API
 
-A production-grade, asynchronous FastAPI backend that implements a modular architecture to ingest market data from the Binance API, run automated technical indicators (Simple Moving Averages), perform AI-driven sentiment analysis using Google Gemini, store high-dimensional embeddings in PostgreSQL using `pgvector`, and expose the data via semantic vector search.
+A FastAPI backend that pulls live market data from Binance, runs SMA-based technical analysis, generates AI sentiment using Google Gemini, and stores vectorized embeddings in PostgreSQL (pgvector) for semantic search. The whole stack runs in Docker with Celery handling background tasks.
 
 This project is fully dockerized and utilizes Redis and Celery to process computationally heavy trade analysis tasks asynchronously in the background.
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The system is designed with a separation of concerns, separating the lightweight, high-performance web layer from the resource-intensive AI and analysis worker processes.
 
@@ -30,7 +35,7 @@ graph TD
 
 ---
 
-## 🛠️ Tech Stack & Concepts Demonstrated
+## Tech Stack & Concepts Demonstrated
 
 *   **FastAPI**: Async-first web framework leveraging Pydantic v2 and Python 3.12 features.
 *   **PostgreSQL & pgvector**: Relational database storage with vector extensions to support Cosine Distance similarity search on AI-generated trade sentiments.
@@ -43,7 +48,7 @@ graph TD
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 We follow the industry-standard **`/app` src layout** separating the application components logically:
 
@@ -65,7 +70,7 @@ We follow the industry-standard **`/app` src layout** separating the application
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 *   Docker & Docker Compose
@@ -107,7 +112,7 @@ docker compose exec web python init_db.py
 
 ---
 
-## 🧪 Testing
+## Testing
 
 The test suite validates authentication, rate limiting, and core endpoint structures asynchronously using `pytest` and `httpx`.
 
@@ -118,12 +123,12 @@ docker compose exec web pytest -v
 
 ---
 
-## 🔗 Code Architecture Walkthrough
+## Code Architecture Walkthrough
 
-- **Entrypoint**: [app/main.py](file:///C:/Users/imota/Desktop/Backend%20Engineering/FastAPI/Project/app/main.py) registers routers, rate limiters, and logs using custom production-grade JSON logging formatters.
-- **Asynchronous Routes**: [app/api/routes/trading.py](file:///C:/Users/imota/Desktop/Backend%20Engineering/FastAPI/Project/app/api/routes/trading.py) uses async Httpx-like connections to Binance to fetch prices instantly without thread blocking.
-- **Asynchronous Worker Strategy**: [app/services/worker.py](file:///C:/Users/imota/Desktop/Backend%20Engineering/FastAPI/Project/app/services/worker.py) houses the Celery tasks, allowing intensive calculations like SMA computations and Gemini LLM text generation to execute on a separate worker node.
-- **pgvector Integration**: Semantic search in [app/api/routes/trading.py](file:///C:/Users/imota/Desktop/Backend%20Engineering/FastAPI/Project/app/api/routes/trading.py#L88) performs vector database search on embeddings using:
+- **Entrypoint**: [app/main.py](app/main.py) registers routers, rate limiters, and logs using custom production-grade JSON logging formatters.
+- **Asynchronous Routes**: [trading.py](app/api/routes/trading.py#L88) uses async Httpx-like connections to Binance to fetch prices instantly without thread blocking.
+- **Asynchronous Worker Strategy**: [app/services/worker.py](app/services/worker.py) houses the Celery tasks, allowing intensive calculations like SMA computations and Gemini LLM text generation to execute on a separate worker node.
+- **pgvector Integration**: Semantic search in [app/api/routes/trading.py#L88](app/api/routes/trading.py#L88) performs vector database search on embeddings using:
   ```python
   select(models.TradeAnalysis).order_by(models.TradeAnalysis.embedding.cosine_distance(query_vector)).limit(1)
   ```
