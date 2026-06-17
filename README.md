@@ -49,6 +49,7 @@ graph TD
 *   **Alternative.me API**: Real-time fetching of the Global Crypto Fear & Greed Index for secondary multi-source analysis.
 *   **Alembic**: Database schema migrations for PostgreSQL.
 *   **Docker & Docker Compose**: Orchestrates multi-container services (Web, DB, Redis, Celery Worker).
+*   **AWS EC2**: Production cloud deployment environment hosting the Dockerized pipeline without the need for managed RDS databases.
 *   **Security (JWT & SlowAPI)**: OAuth2 password bearer flow with stateless JWT tokens for authentication, and SlowAPI for DDoS/abuse rate limiting.
 
 ---
