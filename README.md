@@ -1,6 +1,7 @@
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-green)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-brightgreen)
 
 # Multi-Source AI Trading & Financial Analysis API
 
