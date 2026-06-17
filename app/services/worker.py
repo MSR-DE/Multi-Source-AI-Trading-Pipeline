@@ -26,7 +26,7 @@ redis_url= os.getenv("REDIS_URL", "redis://redis:6379/0")
 
 celery_app = Celery(__name__, broker=redis_url, backend=redis_url)
 
-# 2) Define our long-running Background Task
+# 2) Define the Background Task
 @celery_app.task
 def execute_trade_strategy(crypto_symbol: str):
     
@@ -42,7 +42,7 @@ def execute_trade_strategy(crypto_symbol: str):
     for daily in (past_data_1D):
             closing_prince_history.append(float(daily[4]))    
         
-     ## SMA's based on Daily 
+     ## SMA's based on Daily Candle close
     SMA10 = sum(closing_prince_history)/10
     SMA5 = sum(closing_prince_history[-5:])/5
 

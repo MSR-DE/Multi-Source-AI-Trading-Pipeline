@@ -6,6 +6,8 @@
 
 # Multi-Source AI Trading Pipeline
 
+**Live API Documentation (Swagger UI):** [http://13.61.19.90:8000/docs](http://13.61.19.90:8000/docs)
+
 A FastAPI backend that pulls live market data from Binance and global sentiment from the Crypto Fear & Greed Index, runs technical analysis, generates AI sentiment using Google Gemini, and stores vectorized embeddings in PostgreSQL (pgvector) for semantic search. The whole stack runs in Docker with Celery handling background tasks.
 
 This project is fully dockerized and utilizes Redis and Celery to process computationally heavy trade analysis tasks asynchronously in the background.
