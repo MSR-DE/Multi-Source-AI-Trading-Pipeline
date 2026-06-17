@@ -2,8 +2,9 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-green)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-brightgreen)
+![JWT](https://img.shields.io/badge/Security-JWT_Auth-red)
 
-# Multi-Source AI Trading & Financial Analysis API
+# Multi-Source AI Trading Pipeline
 
 A FastAPI backend that pulls live market data from Binance and global sentiment from the Crypto Fear & Greed Index, runs technical analysis, generates AI sentiment using Google Gemini, and stores vectorized embeddings in PostgreSQL (pgvector) for semantic search. The whole stack runs in Docker with Celery handling background tasks.
 
@@ -46,7 +47,7 @@ graph TD
 *   **Alternative.me API**: Real-time fetching of the Global Crypto Fear & Greed Index for secondary multi-source analysis.
 *   **Alembic**: Database schema migrations for PostgreSQL.
 *   **Docker & Docker Compose**: Orchestrates multi-container services (Web, DB, Redis, Celery Worker).
-*   **SlowAPI**: Rate limiting for DDoS and abuse protection on sensitive endpoints (e.g. trade execution).
+*   **Security (JWT & SlowAPI)**: OAuth2 password bearer flow with stateless JWT tokens for authentication, and SlowAPI for DDoS/abuse rate limiting.
 
 ---
 
