@@ -81,7 +81,14 @@ You must return the result as a strict JSON object with exactly two keys: "senti
  ###---------------------------------####
 
     async def save_to_db():
-        async with SessionLocal() as db:
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+        import os
+        
+        # Recreate engine inside the loop to avoid Celery process sharing issues
+        task_engine = create_async_engine(os.getenv("DATABASE_URL"))
+        TaskSessionLocal = async_sessionmaker(autoflush=False, autocommit=False, bind=task_engine, class_=AsyncSession)
+        
+        async with TaskSessionLocal() as db:
             new_analysis = models.TradeAnalysis(
                 user_id=1,
                 symbol=crypto_symbol,
@@ -91,6 +98,8 @@ You must return the result as a strict JSON object with exactly two keys: "senti
             )
             db.add(new_analysis)
             await db.commit()
+            
+        await task_engine.dispose()
 
     asyncio.run(save_to_db())
 
