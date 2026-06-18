@@ -4,6 +4,7 @@ services:
 # container 1: POSTGRESQL databse
   db:
     image: pgvector/pgvector:pg15
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
@@ -12,6 +13,7 @@ services:
 # Container 2: FastAPI application
   web:
     build: .
+    restart: unless-stopped
     env_file:
       - .env
     ports:
@@ -21,9 +23,11 @@ services:
 
   redis:
     image: redis:7
+    restart: unless-stopped
 
   celery_worker:
     build: .
+    restart: unless-stopped
     env_file:
     - .env
     command: celery -A app.services.worker.celery_app worker --loglevel=info
